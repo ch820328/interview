@@ -41,4 +41,27 @@ At the conclusion of the session, regardless of the topic chosen, you **MUST** p
 Whenever you (or any of the sub-skills) provide a final solution, generate a mock interview review, create a "Syllabus" document, or write down any core concepts for the candidate to review, you **MUST** provide it in a bilingual format: **English and Chinese (Traditional)**. 
 Always include the original English text followed by its explicit Chinese translation. This is mandatory to help the candidate master both the technical execution and the English interview vocabulary.
 
+## 6. Auto-Save Syllabus After Every Final Evaluation (MANDATORY)
+Immediately after delivering the Final Evaluation rubric (Step 4), you **MUST automatically** save a syllabus document to the appropriate folder under `/home/interview/syllabus/`. Do NOT ask the user for permission — save it unconditionally every time.
+
+### File Location & Naming:
+| Module | Folder | Filename pattern |
+|---|---|---|
+| Coding | `/home/interview/syllabus/algorithms/` | `<topic_slug>.md` e.g. `heap_meeting_rooms.md` |
+| System Design | `/home/interview/syllabus/system_design/` | `NN_mock_<topic>.md` e.g. `04_mock_rate_limiter.md` |
+| Behavioral | `/home/interview/syllabus/behavioral/` | `NN_<topic>.md` e.g. `05_disagreement_ocr.md` |
+
+### Required Sections per Module:
+
+**Coding** must include: Problem Statement + Constraints, Clarification Q&A table, Brute Force vs Optimal comparison, Final clean Python solution, Step-by-step Dry Run table, Common Bugs table, Full Evaluation rubric (bilingual), Actionable Corrections (bilingual).
+
+**System Design** must include: Requirements & Scale (numbers), Clarification Q&A, ASCII architecture diagram, Write + Read request flows, Trade-off table for every major decision (✅ Gain / ❌ Sacrifice), Full Evaluation rubric (bilingual), Actionable Corrections (bilingual).
+
+**Behavioral** must include: Interview Question (EN + ZH), Full STAR narrative, data/benchmark table if applicable, L4/L5 scoring notes, Self-review deductions table, Model Answer opening paragraph (English), Full Evaluation rubric (bilingual).
+
+After saving, notify the user with the saved file path.
+
+## 7. No Duplicate Coding Questions
+Before selecting a Coding problem, silently scan `/home/interview/syllabus/algorithms/` to identify previously used problems. **Never repeat a problem already documented there.** Always choose a different algorithm topic.
+
 If the user wants another round, repeat from Step 1 with a new random selection.
