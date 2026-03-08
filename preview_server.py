@@ -10,8 +10,8 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
 
-SYLLABUS_DIR = "/home/interview/syllabus"
-PORT = 8765
+SYLLABUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "syllabus")
+PORT = 20328
 
 
 def get_all_files():
@@ -43,15 +43,11 @@ HTML = r"""<!DOCTYPE html>
     --sidebar:  #161b22;
     --border:   #30363d;
     --accent:   #58a6ff;
-    --accent2:  #3fb950;
     --text:     #e6edf3;
     --muted:    #8b949e;
     --hover:    #1f2937;
     --active:   #1c2d3f;
     --code-bg:  #161b22;
-    --tag-coding:  #388bfd22;
-    --tag-system:  #3fb95022;
-    --tag-behav:   #d2a63422;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -64,35 +60,71 @@ HTML = r"""<!DOCTYPE html>
     overflow: hidden;
   }
 
+  /* Activity Bar */
+  #activity-bar {
+    width: 56px;
+    background: #090c10;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+    gap: 12px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .activity-item {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--muted);
+    transition: all 0.15s;
+    position: relative;
+    opacity: 0.6;
+  }
+  .activity-item:hover { opacity: 1; background: var(--hover); }
+  .activity-item.active { opacity: 1; background: var(--hover); }
+  .activity-item.active::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+
   /* ── Sidebar ── */
   #sidebar {
-    width: 280px;
-    min-width: 220px;
+    width: 250px;
+    min-width: 200px;
     max-width: 360px;
     background: var(--sidebar);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    flex-shrink: 0;
   }
   #sidebar-header {
-    padding: 20px 16px 12px;
-    border-bottom: 1px solid var(--border);
+    padding: 18px 16px 12px;
   }
   #sidebar-header h1 {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 0.03em;
-  }
-  #sidebar-header p {
     font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
     color: var(--muted);
-    margin-top: 3px;
+    letter-spacing: 0.05em;
   }
 
   #search-wrap {
-    padding: 10px 12px;
+    padding: 0 12px 10px;
     border-bottom: 1px solid var(--border);
   }
   #search {
@@ -100,10 +132,9 @@ HTML = r"""<!DOCTYPE html>
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 6px;
-    padding: 6px 10px;
+    border-radius: 4px;
+    padding: 6px 8px;
     font-size: 12px;
-    font-family: 'Inter', sans-serif;
     outline: none;
     transition: border-color 0.2s;
   }
@@ -112,47 +143,42 @@ HTML = r"""<!DOCTYPE html>
   #file-list {
     flex: 1;
     overflow-y: auto;
-    padding: 8px 6px;
+    padding: 8px 0;
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
-  .section-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 10px 10px 4px;
+  
+  /* Tree Nodes */
+  .folder-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    user-select: none;
   }
+  .folder-item:hover { background: var(--hover); }
+  .folder-icon {
+    font-size: 12px;
+  }
+  .folder-icon::after { content: '📂'; }
+  .folder-item.collapsed .folder-icon::after { content: '📁'; }
+
   .file-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    border-radius: 6px;
+    gap: 6px;
+    padding: 6px 10px;
     cursor: pointer;
-    font-size: 12.5px;
+    font-size: 13px;
     color: var(--muted);
-    transition: background 0.15s, color 0.15s;
-    line-height: 1.4;
+    user-select: none;
   }
   .file-item:hover { background: var(--hover); color: var(--text); }
   .file-item.active { background: var(--active); color: var(--accent); }
-  .file-item .icon { font-size: 14px; flex-shrink: 0; }
-  .file-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tag {
-    font-size: 9px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 99px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
-  }
-  .tag-coding  { background: var(--tag-coding);  color: #58a6ff; border: 1px solid #388bfd55; }
-  .tag-system  { background: var(--tag-system);  color: #3fb950; border: 1px solid #3fb95055; }
-  .tag-behav   { background: var(--tag-behav);   color: #d2a634; border: 1px solid #d2a63455; }
-  .tag-ai      { background: #8957e522;           color: #bc8cff; border: 1px solid #8957e555; }
 
   /* ── Main ── */
   #main {
@@ -160,6 +186,7 @@ HTML = r"""<!DOCTYPE html>
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: var(--bg);
   }
   #topbar {
     display: flex;
@@ -175,26 +202,21 @@ HTML = r"""<!DOCTYPE html>
     font-weight: 500;
     color: var(--text);
     flex: 1;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
   }
-  #loading-badge {
-    font-size: 11px;
-    color: var(--muted);
-    display: none;
-  }
+  #loading-badge { display: none; font-size: 11px; color: var(--muted); }
 
   #content-wrap {
     flex: 1;
     overflow-y: auto;
     padding: 36px 48px;
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
   }
   #content { max-width: 800px; margin: 0 auto; }
 
-  /* ── Markdown styles ── */
+  /* Markdown styles */
   #content h1 { font-size: 26px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; color: var(--text); }
   #content h2 { font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
   #content h3 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: #cdd9e5; }
@@ -205,86 +227,35 @@ HTML = r"""<!DOCTYPE html>
   #content li { line-height: 1.75; font-size: 14px; color: #cdd9e5; margin-bottom: 4px; }
   #content strong { color: var(--text); font-weight: 600; }
   #content em { color: #d2a634; }
-  #content blockquote {
-    border-left: 3px solid var(--accent);
-    padding: 8px 16px;
-    margin: 16px 0;
-    background: #1c2d3f55;
-    border-radius: 0 6px 6px 0;
-    color: #8b949e;
-    font-size: 13.5px;
-  }
-  #content code {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-    font-size: 12.5px;
-    color: #f85149;
-  }
-  #content pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 18px 20px;
-    overflow-x: auto;
-    margin: 16px 0;
-    scrollbar-width: thin;
-  }
-  #content pre code {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 12.5px;
-    color: #e6edf3;
-  }
-  #content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 13px;
-  }
-  #content th {
-    background: #1c2d3f;
-    color: var(--accent);
-    font-weight: 600;
-    padding: 9px 14px;
-    text-align: left;
-    border: 1px solid var(--border);
-  }
-  #content td {
-    padding: 8px 14px;
-    border: 1px solid var(--border);
-    color: #cdd9e5;
-    vertical-align: top;
-  }
+  #content blockquote { border-left: 3px solid var(--accent); padding: 8px 16px; margin: 16px 0; background: #1c2d3f55; border-radius: 0 6px 6px 0; color: #8b949e; font-size: 13.5px; }
+  #content code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 12.5px; color: #f85149; }
+  #content pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; overflow-x: auto; margin: 16px 0; }
+  #content pre code { background: none; border: none; padding: 0; color: #e6edf3; }
+  #content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  #content th { background: #1c2d3f; color: var(--accent); font-weight: 600; padding: 9px 14px; text-align: left; border: 1px solid var(--border); }
+  #content td { padding: 8px 14px; border: 1px solid var(--border); color: #cdd9e5; vertical-align: top; }
   #content tr:nth-child(even) td { background: #ffffff06; }
   #content hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 
-  /* placeholder */
-  #placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--muted);
-    gap: 12px;
-  }
+  #placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 12px; }
   #placeholder .icon { font-size: 48px; }
-  #placeholder p { font-size: 14px; }
 </style>
 </head>
 <body>
 
+<div id="activity-bar">
+  <div class="activity-item" data-section="system_design" title="System Design">🏗️</div>
+  <div class="activity-item" data-section="algorithms" title="Algorithms">⚙️</div>
+  <div class="activity-item" data-section="behavioral" title="Behavioral">💬</div>
+  <div class="activity-item" data-section="ai_architecture" title="AI Architecture">🤖</div>
+</div>
+
 <nav id="sidebar">
   <div id="sidebar-header">
-    <h1>📚 Interview Syllabus</h1>
-    <p>Google L4/L5 Mock Review Notes</p>
+    <h1 id="sidebar-title">System Design</h1>
   </div>
   <div id="search-wrap">
-    <input id="search" type="text" placeholder="Search files..." />
+    <input id="search" type="text" placeholder="Search files..." autocomplete="off" />
   </div>
   <div id="file-list"></div>
 </nav>
@@ -306,61 +277,109 @@ HTML = r"""<!DOCTYPE html>
 <script>
 let files = [];
 let activeItem = null;
-
-function tagFor(label) {
-  if (label.startsWith('algorithms/')) return '<span class="tag tag-coding">Coding</span>';
-  if (label.startsWith('system_design/')) return '<span class="tag tag-system">System</span>';
-  if (label.startsWith('behavioral/')) return '<span class="tag tag-behav">Behav</span>';
-  if (label.startsWith('ai_architecture/')) return '<span class="tag tag-ai">AI</span>';
-  return '';
-}
-
-function iconFor(label) {
-  if (label.startsWith('algorithms/')) return '⚙️';
-  if (label.startsWith('system_design/')) return '🏗️';
-  if (label.startsWith('behavioral/')) return '💬';
-  if (label.startsWith('ai_architecture/')) return '🤖';
-  return '📄';
-}
+let currentSection = 'system_design';
+const sectionTitles = {
+  algorithms: 'Algorithms',
+  system_design: 'System Design',
+  behavioral: 'Behavioral',
+  ai_architecture: 'AI Architecture'
+};
 
 function buildSidebar(filter = '') {
+  document.getElementById('sidebar-title').textContent = sectionTitles[currentSection] || 'Files';
   const list = document.getElementById('file-list');
   list.innerHTML = '';
 
-  const sections = {};
-  files.forEach(f => {
-    if (filter && !f.label.toLowerCase().includes(filter.toLowerCase())) return;
-    const dir = f.label.includes('/') ? f.label.split('/')[0] : 'root';
-    if (!sections[dir]) sections[dir] = [];
-    sections[dir].push(f);
+  const sectionFiles = files.filter(f => f.label.startsWith(currentSection + '/'));
+  const filteredFiles = sectionFiles.filter(f => !filter || f.label.toLowerCase().includes(filter.toLowerCase()));
+
+  if (filteredFiles.length === 0) {
+    list.innerHTML = '<div style="padding: 10px 16px; color: var(--muted); font-size: 12px;">No files found</div>';
+    return;
+  }
+
+  const tree = {};
+  filteredFiles.forEach(f => {
+    const relPath = f.label.slice(currentSection.length + 1);
+    const parts = relPath.split('/');
+    let curr = tree;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!curr[parts[i]]) curr[parts[i]] = { _isDir: true, children: {} };
+      curr = curr[parts[i]].children;
+    }
+    curr[parts[parts.length - 1]] = { _isDir: false, file: f };
   });
 
-  const sectionNames = { algorithms: '⚙️ Algorithms', system_design: '🏗️ System Design', behavioral: '💬 Behavioral', ai_architecture: '🤖 AI Architecture' };
-
-  Object.keys(sections).forEach(dir => {
-    const label = document.createElement('div');
-    label.className = 'section-label';
-    label.textContent = sectionNames[dir] || dir;
-    list.appendChild(label);
-
-    sections[dir].forEach(f => {
-      const item = document.createElement('div');
-      item.className = 'file-item' + (activeItem === f.path ? ' active' : '');
-      const fname = f.label.split('/').pop().replace('.md', '');
-      item.innerHTML = `<span class="icon">${iconFor(f.label)}</span><span class="name">${fname}</span>${tagFor(f.label)}`;
-      item.title = f.label;
-      item.addEventListener('click', () => loadFile(f.path, f.label, item));
-      list.appendChild(item);
+  function drawNode(node, domParent, depth) {
+    const keys = Object.keys(node).sort((a,b) => {
+       const isDirA = node[a]._isDir ? 1 : 0;
+       const isDirB = node[b]._isDir ? 1 : 0;
+       if (isDirA !== isDirB) return isDirB - isDirA;
+       return a.localeCompare(b);
     });
+
+    keys.forEach(k => {
+      const child = node[k];
+      
+      if (child._isDir) {
+        const div = document.createElement('div');
+        const folderHead = document.createElement('div');
+        folderHead.className = 'folder-item';
+        folderHead.style.paddingLeft = (depth * 14 + 10) + 'px';
+        folderHead.innerHTML = `<span class="icon folder-icon"></span><span class="name">${k}</span>`;
+        
+        const folderContent = document.createElement('div');
+        folderContent.className = 'folder-content';
+        
+        folderHead.addEventListener('click', () => {
+          const isCollapsed = folderContent.style.display === 'none';
+          folderContent.style.display = isCollapsed ? 'block' : 'none';
+          folderHead.classList.toggle('collapsed', !isCollapsed);
+        });
+
+        div.appendChild(folderHead);
+        div.appendChild(folderContent);
+        domParent.appendChild(div);
+        
+        drawNode(child.children, folderContent, depth + 1);
+      } else {
+        const f = child.file;
+        const item = document.createElement('div');
+        item.className = 'file-item' + (activeItem === f.path ? ' active' : '');
+        item.style.paddingLeft = (depth * 14 + 10) + 'px';
+        const fname = k.replace('.md', '');
+        item.innerHTML = `<span class="icon">📄</span><span class="name">${fname}</span>`;
+        item.title = f.label;
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          loadFile(f.path, f.label, item);
+        });
+        domParent.appendChild(item);
+      }
+    });
+  }
+  
+  drawNode(tree, list, 0);
+}
+
+function updateActivityBar() {
+  document.querySelectorAll('.activity-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.section === currentSection);
   });
 }
 
-async function loadFile(path, label, item) {
-  // Clear active
-  document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
-  item.classList.add('active');
-  activeItem = path;
+document.querySelectorAll('.activity-item').forEach(el => {
+  el.addEventListener('click', () => {
+    currentSection = el.dataset.section;
+    document.getElementById('search').value = '';
+    updateActivityBar();
+    buildSidebar();
+  });
+});
 
+async function loadFile(path, label, item) {
+  activeItem = path;
   document.getElementById('loading-badge').style.display = 'inline';
   document.getElementById('topbar-title').textContent = label;
   document.getElementById('placeholder').style.display = 'none';
@@ -380,10 +399,10 @@ async function loadFile(path, label, item) {
 
 document.getElementById('search').addEventListener('input', e => buildSidebar(e.target.value));
 
-// Init
 (async () => {
   const res = await fetch('/files');
   files = await res.json();
+  updateActivityBar();
   buildSidebar();
 })();
 </script>
