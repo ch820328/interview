@@ -1,64 +1,60 @@
-class Node:
-    def __init__(self, key=0, val=0):
-        self.key = key
-        self.val = val
-        self.prev = None
-        self.next = None
+import random
 
-class LRUCache:
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.cache = {}
-        self.head = Node()
-        self.tail = Node()
-        self.head.next = self.tail
-        self.tail.prev = self.head
+class RandomizedSet:
+    def __init__(self):
+        self.nums = []
+        self.val_to_idx = {}
 
-    def _remove(self, node: Node):
-        prev_node = node.prev
-        next_node = node.next
-        prev_node.next = next_node
-        next_node.prev = prev_node
-    
-    def _add_to_head(self, node: Node):
-        node.next = self.head.next
-        node.prev = self.head
-        self.head.next.prev = node
-        self.head.next = node
+    def insert(self, val: int) -> bool:
+        if val in self.val_to_idx:
+            return False
+        
+        # O(1) append & map entry
+        self.val_to_idx[val] = len(self.nums)
+        self.nums.append(val)
+        return True
 
-    def get(self, key: int) -> int:
-        if key not in self.cache:
-            return -1
-        node = self.cache[key]
-        self._remove(node)
-        self._add_to_head(node)
-        return node.val
+    def remove(self, val: int) -> bool:
+        if val not in self.val_to_idx:
+            return False
+        
+        # O(1) swap & pop logic
+        idx_to_remove = self.val_to_idx[val]
+        
+        # Move last element to the target index
+        self.nums[idx_to_remove] = self.nums[-1]
+        self.val_to_idx[self.nums[-1]] = idx_to_remove
+        
+        # Cleanup
+        self.nums.pop()
+        del self.val_to_idx[val]
+        
+        return True
 
-    def put(self, key, val):
-        if key in self.cache:
-            node = self.cache[key]
-            node.val = val
-            self._remove(node)
-            self._add_to_head(node)
-        else:
-            if len(self.cache) >= self.capacity:
-                lru_node = self.tail.prev
-                self._remove(lru_node)
-                del self.cache[lru_node.key]
-            
-            new_node = Node(key, val)
-            self._add_to_head(new_node)
-            self.cache[key] = new_node
-
+    def getRandom(self) -> int:
+        # O(1) uniform selection
+        return random.choice(self.nums)
 
 if __name__ == "__main__":
-    cache = LRUCache(capacity=2)
-    cache.put(1, 1)    # cache is {1=1}
-    cache.put(2, 2)    # cache is {1=1, 2=2}
-    print(cache.get(1))       # returns 1
-    cache.put(3, 3)    # evicts key 2, cache is {1=1, 3=3}
-    print(cache.get(2))       # returns -1 (not found)
-    cache.put(4, 4)    # evicts key 1, cache is {4=4, 3=3}
-    print(cache.get(1))       # returns -1 (not found)
-    print(cache.get(3))       # returns 3
-    print(cache.get(4))       # returns 4
+    rs = RandomizedSet()
+    
+    # Test 1: Basic Insert
+    print(f"Insert 1: {rs.insert(1)}")      # True
+    print(f"Insert 2: {rs.insert(2)}")      # True
+    print(f"Insert 1 (Duplicate): {rs.insert(1)}")  # False
+    
+    # Test 2: GetRandom (Should be 1 or 2)
+    print(f"Random: {rs.getRandom()}")
+    
+    # Test 3: Remove last element (Edge case check)
+    # If we remove 2, and 2 is the last element, the swap logic needs to be safe
+    print(f"Remove 2: {rs.remove(2)}")      # True
+    print(f"Random (must be 1): {rs.getRandom()}")
+    
+    # Test 4: Remove and Insert
+    print(f"Insert 3: {rs.insert(3)}")      # True
+    print(f"Remove 1: {rs.remove(1)}")      # True
+    print(f"Random (must be 3): {rs.getRandom()}")
+    
+    # Test 5: Check non-existing remove
+    print(f"Remove 100: {rs.remove(100)}")  # False
