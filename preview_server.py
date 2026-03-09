@@ -180,6 +180,29 @@ HTML = r"""<!DOCTYPE html>
   .file-item:hover { background: var(--hover); color: var(--text); }
   .file-item.active { background: var(--active); color: var(--accent); }
 
+  /* ── Sidebar Toggle ── */
+  #sidebar.collapsed { display: none !important; }
+  #sidebar-toggle {
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--muted);
+    user-select: none;
+    line-height: 1;
+  }
+  #sidebar-toggle:hover { color: var(--text); }
+
+  @media (max-width: 768px) {
+    #sidebar {
+      position: absolute;
+      left: 56px;
+      top: 53px;
+      bottom: 0;
+      z-index: 50;
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
+    }
+    #content-wrap { padding: 20px 16px !important; }
+  }
+
   /* ── Main ── */
   #main {
     flex: 1;
@@ -262,6 +285,7 @@ HTML = r"""<!DOCTYPE html>
 
 <div id="main">
   <div id="topbar">
+    <div id="sidebar-toggle" title="Toggle Sidebar">☰</div>
     <span id="topbar-title">Select a file to preview</span>
     <span id="loading-badge">Loading…</span>
   </div>
@@ -284,6 +308,14 @@ const sectionTitles = {
   behavioral: 'Behavioral',
   ai_architecture: 'AI Architecture'
 };
+
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+if (window.innerWidth <= 768) {
+  document.getElementById('sidebar').classList.add('collapsed');
+}
 
 function buildSidebar(filter = '') {
   document.getElementById('sidebar-title').textContent = sectionTitles[currentSection] || 'Files';
@@ -385,6 +417,10 @@ async function loadFile(path, label, item) {
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   document.getElementById('content').innerHTML = '<p style="color:var(--muted);font-size:13px">Loading…</p>';
+
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.add('collapsed');
+  }
 
   try {
     const res = await fetch('/file?path=' + encodeURIComponent(path));
