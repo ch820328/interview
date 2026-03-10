@@ -27,6 +27,8 @@
 | [story_bios_bug.md](sample/story_bios_bug.md) | BIOS 環境變數 Bug：召集三方會議，讓產線人員的真實數據打破資深同事的 Sunk Cost 僵局 | `T1` `T3` `T6` |
 | [story_bsp_flash.md](sample/story_bsp_flash.md) | BSP Flash 架構改革：PoC + 資安論據說服 PM 與產線，刷機工時降低 50% | `T1` `T3` `T5` |
 | [story_portal_migration.md](sample/story_portal_migration.md) | 帶領 30+ 人遷移至集中式 Go/Vue Portal，靠穩定性驅動自願採用，消滅 Configuration Drift | `T2` `T3` `T5` |
+| [story_ipc_cost_down.md](sample/story_ipc_cost_down.md) | IPC 規格降級失敗：沒能說服主管預留空間導致現場物理改裝，事後推動 cross-functional NPI 標準 | `T1` `T3` `T4` `T5` |
+
 
 ---
 
@@ -37,17 +39,16 @@
 | **T1 衝突** | `story_ocr_opencv` | `story_flaky_tests` / `story_bios_bug` / `story_bsp_flash` | ✅ 充足 |
 | **T2 模糊性** | `story_flaky_tests` (Layer B) | `story_portal_migration` | ⚠️ 可補強 |
 | **T3 領導力** | `story_ocr_opencv` | `story_flaky_tests` / `story_bios_bug` / `story_bsp_flash` / `story_portal_migration` | ✅ 充足 |
-| **T4 失敗反思** | `story_flaky_tests` (失敗線) | — | ❌ 需要補充主力故事 |
-| **T5 優先級** | `story_ocr_opencv` | `story_bsp_flash` / `story_portal_migration` | ✅ 尚可 |
+| **T4 失敗反思** | `story_ipc_cost_down` | `story_flaky_tests` (失敗線) | ✅ 充足 |
+| **T5 優先級** | `story_ocr_opencv` | `story_bsp_flash` / `story_portal_migration` | ✅ 充足 |
 | **T6 Googleyness** | `story_flaky_tests` | `story_bios_bug` | ⚠️ 建議補強 |
 
 ---
 
 ## 優先補強清單
 
-1. ❌ **Type 4（失敗與反思）** — L4/L5 最高頻卡關點，仍缺乏獨立的失敗故事
-2. ⚠️ **Type 2（模糊性）** — 目前靠 Flaky Tests 的 Layer B 組合，建議補一個更純粹的故事
-3. ⚠️ **Type 6（Googleyness）** — 缺少「犧牲個人利益 / D&I」主線故事
+1. ⚠️ **Type 2（模糊性）** — 目前靠 Flaky Tests 的 Layer B 組合，建議補一個更純粹的故事
+2. ⚠️ **Type 6（Googleyness）** — 缺少「犧牲個人利益 / D&I」主線故事
 
 ---
 

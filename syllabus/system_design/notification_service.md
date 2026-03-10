@@ -259,4 +259,4 @@ If lag threatens real-time OTP delivery: temporarily advance consumer offset, pr
 | **Staleness Check** | Verifying that a message has not expired before processing it | 過期性檢查：在處理訊息前確認其尚未逾期 |
 | **Adapter Pattern** | A design pattern that translates one interface into another for compatibility | 適配器模式：將一個介面轉換為另一個以達到相容性 |
 | **replication.factor** | Kafka config: number of copies of each partition across brokers | Kafka 配置：每個分區在不同 Broker 上的副本數量 |
-| **min.insync.replicas** | Kafka config: minimum replicas that must acknowledge a write before it succeeds | Kafka 配置：寫入成功前必須確認的最小副本數量 |
+| **min.insync.replicas** | Kafka config: minimum replicas that must acknowledge a write before it succeeds | Kafka 配置：寫入成功前必須確認的最小副本數量

@@ -56,6 +56,13 @@
 | [binary_search_koko.md](05_binary_search/binary_search_koko.md) | Koko Eating Bananas |
 | [binary_search_on_answer_koko.md](05_binary_search/binary_search_on_answer_koko.md) | 答案空間二分搜尋 |
 
+### 04 Prefix Sum / 前綴和
+| 檔案 | 題目摘要 |
+|------|---------|
+| [range_sum_query_immutable.md](04_prefix_sum/range_sum_query_immutable.md) | 區域和檢索（靜態陣列） |
+| [random_pick_with_weight.md](04_prefix_sum/random_pick_with_weight.md) | 按權重隨機選擇 |
+| [random_point_in_rectangles.md](04_prefix_sum/random_point_in_rectangles.md) | 矩陣隨機取點（前綴和 + 二分搜尋）✅ 新 |
+
 ### 06 Linked List
 | 檔案 | 題目摘要 |
 |------|---------|
@@ -86,6 +93,9 @@
 | [advanced_graph_shortest_path.md](10_graphs/advanced_graph_shortest_path.md) | 最短路徑進階 |
 | [topological_sort.md](10_graphs/topological_sort.md) | 拓撲排序 |
 | [union_find.md](10_graphs/union_find.md) | Union Find（並查集）|
+| [robot_room_cleaner.md](10_graphs/robot_room_cleaner.md) | 掃地機器人（DFS 物理回溯） |
+| [maze_with_keys.md](10_graphs/maze_with_keys.md) | 迷宮與鑰匙（Greedy BFS 可達性優化）✅ 新 |
+
 
 ### 11 Dynamic Programming
 | 檔案 | 題目摘要 |
@@ -93,9 +103,15 @@
 | [dynamic_programming.md](11_dynamic_programming/dynamic_programming.md) | DP 基礎 |
 | [dp_word_break.md](11_dynamic_programming/dp_word_break.md) | Word Break |
 
+### 15 Heuristics / 啟發式搜索
+| 檔案 | 題目摘要 |
+|------|---------|
+| [word_guessing_strategy.md](15_heuristics/word_guessing_strategy.md) | Wordle 猜字策略（一致性過濾 + 頻率啟發式）✅ 新 |
+
 ### 12 Advanced Data Structures
 | 檔案 | 題目摘要 |
 |------|---------|
 | [trie.md](12_advanced/trie.md) | 字典樹 Trie |
 | [segment_tree_and_fenwick.md](12_advanced/segment_tree_and_fenwick.md) | 線段樹 + 樹狀陣列 |
 | [insert_delete_getrandom.md](12_advanced/insert_delete_getrandom.md) | Insert Delete GetRandom O(1) |
+| [stock_price_class.md](12_advanced_ds/stock_price_class.md) | 股票價格波動（HashMap + Heap 延遲刪除）✅ 新 |
