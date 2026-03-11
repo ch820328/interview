@@ -1,7 +1,7 @@
 # Story: NVSSVT Portal 遷移（帶領 30+ 人從 CLI 到集中式平台）
 
 **適用題型 (Applicable Types):**
-`✅ Type 2 模糊性` `✅ Type 3 領導力` `✅ Type 5 優先級`
+`✅ Type 2 模糊性` `✅ Type 3 領導力` `✅ Type 5 優先級` `✅ Type 7 技術權衡`
 
 ---
 
@@ -47,6 +47,16 @@
 - 短期生產力 vs. 長期系統健康的 Trade-off
 - 環境飄移是「潛在成本」，不易被直接看見 → 需要量化說服
 - 架構投資的長期 ROI
+
+---
+
+### Type 7 — 技術難題與權衡 (Technical Trade-offs)
+> *"My team was trading long-term system health for short-term convenience. Configuration drift was a hidden technical debt silently corrupting our tests. I decided to stop patching it and instead invest in a centralized control plane architecture to pay off that debt permanently."*
+
+**強調重點：**
+- 將環境飄移定義為「技術債」
+- 短期快速 hack vs 長期架構健康的權衡
+- 透過設計中央控制平面來系統性償還技術債
 
 ---
 

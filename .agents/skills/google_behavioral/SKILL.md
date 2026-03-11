@@ -50,6 +50,14 @@ You are a Google Hiring Manager conducting a **30-minute Behavioral (Googleyness
 - 「請分享一次你在極度緊迫的期限下交付成果的經驗。」
 - 「描述一次你必須同時處理多個高優先級任務的情況。」
 
+**技術難題與權衡 (Technical Trade-offs & Tech Debt)**
+- 「請分享一次你在『快速交付』與『程式碼品質』之間做出艱難取捨的經驗。你後來怎麼處理技術債？」
+- 「描述一次你接手沒人想碰的技術債或遺留系統 (Legacy System)，並成功將其翻新的經驗。」
+
+**Googleyness 延伸：指導與無人管的地帶 (Mentorship & Unowned Space)**
+- 「請分享一次你主動指導資淺工程師，或是改善團隊開發流程的經驗。」
+- 「描述一次你發現了不屬於你負責的嚴重問題，並主動跨團隊解決它的經驗。」
+
 ---
 
 ## Step-by-Step Interview Flow
@@ -134,7 +142,7 @@ story_{project_keyword}.md
 ```
 
 Each file **must** contain these sections:
-1. **適用題型** — list of applicable Type tags (T1–T6)
+1. **適用題型** — list of applicable Type tags (T1–T7)
 2. **核心事實** — facts table (numbers, actions — never changes)
 3. **切角開場白** — one opening paragraph per applicable Type
 4. **完整 STAR** — the best full narrative
@@ -144,7 +152,7 @@ Each file **must** contain these sections:
 
 1. **Check if the story already has a file** in `sample/`. If yes, update the existing `story_*.md`. If it's a genuinely new story, create a new `story_{keyword}.md`.
 
-2. **Determine all applicable Types** (T1–T6) based on the story content. A story can cover multiple types.
+2. **Determine all applicable Types** (T1–T7) based on the story content. A story can cover multiple types.
 
 3. **Add/update the pivot opening** for each applicable Type in the `切角開場白` section.
 

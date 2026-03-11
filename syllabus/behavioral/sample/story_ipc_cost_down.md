@@ -1,7 +1,7 @@
 # Story: IPC 規格降級失敗（從現場物理改裝到系統性研發標準）
 
 **適用題型 (Applicable Types):**
-`✅ Type 4 失敗與反思 (Failure & Resilience)` `✅ Type 1 衝突與對齊` `✅ Type 3 領導力` `✅ Type 5 優先級`
+`✅ Type 4 失敗與反思 (Failure & Resilience)` `✅ Type 1 衝突與對齊` `✅ Type 3 領導力` `✅ Type 5 優先級` `✅ Type 7 技術權衡`
 
 ---
 
@@ -38,6 +38,13 @@
 > **English:** "I turned a major production crisis into a new company standard. After discovering our hardware selection process lacked expansion buffers, I led a cross-functional post-mortem that forced Procurement and PMs to adopt a new risk-based hardware checklist."
 >
 > **中文：** 「我將一場嚴重的生產危機轉化為新的公司標準。在發現硬體選型缺乏擴展緩衝後，我主動召集了跨部門檢討會，推動採購與 PM 團隊採用基於風險的硬體檢核清單。」
+
+---
+
+### Type 7 — 技術難題與權衡 (Technical Trade-offs)
+> **English:** "I once compromised on hardware specs to meet an aggressive cost-down goal, which created massive technical debt. When the system hit its limit, I had to physically modify the hardware on-site. Here is how I handled the immediate fallout and changed our engineering culture to balance cost with technical safety margins."
+>
+> **中文：** 「我曾為了達成積極的降本目標而在硬體規格上妥協，這帶來了巨大的技術債。當系統達到極限時，我必須在現場進行物理改裝。這是我如何處理這場危機，並改變團隊文化，在成本與技術安全餘裕之間取得平衡的故事。」
 
 ---
 
