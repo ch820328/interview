@@ -1,47 +1,40 @@
-import heapq
+from typing import List
 
-class StockPrice:
+class Node:
+    def __init__(self, val=0, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
 
-    def __init__(self):
-        self.newest_value = None
-        self.newest_timestamp = -1
-        self.timestamp_price = {}
-        self.min_price_heap = []
-        self.max_price_heap = []
-
-    def update(self, timestamp: int, price: int) -> None:
-        if timestamp >= self.newest_timestamp:
-            self.newest_timestamp = timestamp
-            self.newest_value = price
-        self.timestamp_price[timestamp] = price
-        heapq.heappush(self.min_price_heap, (price, timestamp))
-        heapq.heappush(self.max_price_heap, (-1 * price, timestamp))
-
-    def current(self) -> int:
-        # your implementation here
-        return self.newest_value if self.newest_timestamp != -1 else -1
-
-    def maximum(self) -> int:
-        while self.max_price_heap and -1 * self.max_price_heap[0][0] != self.timestamp_price[self.max_price_heap[0][1]]:
-            heapq.heappop(self.max_price_heap)
-        return -1 * self.max_price_heap[0][0]
-
-    def minimum(self) -> int:
-        while self.min_price_heap and self.min_price_heap[0][0] != self.timestamp_price[self.min_price_heap[0][1]]:
-            heapq.heappop(self.min_price_heap)
-        return self.min_price_heap[0][0]
-
+class Solution:
+    def countComponents(self, input_nodes: List[Node]) -> int:
+        res = 0
+        node_set = set(input_nodes)
+        for node in input_nodes:
+            if node.prev is None or node.prev not in node_set:
+                res += 1
+        return res
 
 # --- Test harness ---
+def create_doubly_list(arr):
+    if not arr: return []
+    nodes = [Node(val) for val in arr]
+    for i in range(len(nodes)):
+        if i > 0: nodes[i].prev = nodes[i-1]
+        if i < len(nodes) - 1: nodes[i].next = nodes[i+1]
+    return nodes
+
 if __name__ == "__main__":
-    stock = StockPrice()
-    stock.update(1, 10)
-    stock.update(2, 5)
-    print(stock.current())  # Expected: 5
-    print(stock.maximum())  # Expected: 10
+    # Original list: 0 <-> 1 <-> 2 <-> 3 <-> 4
+    full_list = create_doubly_list([0, 1, 2, 3, 4])
     
-    stock.update(1, 3)      # Correction: timestamp 1 is now price 3
-    print(stock.maximum())  # Expected: 5 (since 10 was overwritten)
+    sol = Solution()
     
-    stock.update(4, 2)
-    print(stock.minimum())  # Expected: 2
+    # Case 1: [0, 1, 3] -> (0-1), (3) -> 2 components
+    print(sol.countComponents([full_list[0], full_list[1], full_list[3]])) 
+    
+    # Case 2: [0, 2, 4] -> (0), (2), (4) -> 3 components
+    print(sol.countComponents([full_list[0], full_list[2], full_list[4]]))
+    
+    # Case 3: [0, 1, 2, 3, 4] -> (0-1-2-3-4) -> 1 component
+    print(sol.countComponents(full_list))

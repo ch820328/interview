@@ -28,6 +28,8 @@
 |------|---------|
 | [array_and_string.md](01_array_hashing/array_and_string.md) | 陣列與字串基礎 |
 | [hash_table.md](01_array_hashing/hash_table.md) | HashMap 查找 |
+| [two_sum.md](01_array_hashing/two_sum.md) | Two Sum（經典 Hash Map） |
+| [buddy_strings.md](01_array_hashing/buddy_strings.md) | 字串夥伴（字串交換與重複檢查）✅ 新 |
 | [prefix_sum.md](01_array_hashing/prefix_sum.md) | 前綴和 |
 
 ### 02 Two Pointers
@@ -68,6 +70,7 @@
 |------|---------|
 | [linked_list.md](06_linked_list/linked_list.md) | 鏈結串列基礎 |
 | [lru_cache.md](06_linked_list/lru_cache.md) | LRU Cache |
+| [connected_components_dll.md](06_linked_list/connected_components_dll.md) | 雙向鏈結串列連通分量（邊界計數法）✅ 新 |
 
 ### 07 Trees
 | 檔案 | 題目摘要 |
@@ -114,4 +117,5 @@
 | [trie.md](12_advanced/trie.md) | 字典樹 Trie |
 | [segment_tree_and_fenwick.md](12_advanced/segment_tree_and_fenwick.md) | 線段樹 + 樹狀陣列 |
 | [insert_delete_getrandom.md](12_advanced/insert_delete_getrandom.md) | Insert Delete GetRandom O(1) |
-| [stock_price_class.md](12_advanced_ds/stock_price_class.md) | 股票價格波動（HashMap + Heap 延遲刪除）✅ 新 |
+| [stock_price_class.md](12_advanced_ds/stock_price_class.md) | 股票價格波動（HashMap + Heap 延遲刪除） |
+| [stream_checker.md](12_advanced_ds/stream_checker.md) | 字元流與字典（反向 Trie 妙用）✅ 新 |
