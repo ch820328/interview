@@ -7,11 +7,22 @@ Then open: http://localhost:8765
 
 import os
 import json
+import threading
+import time
+import subprocess
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
 
 SYLLABUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "syllabus")
 PORT = 20328
+
+# Global state for Git updates
+git_status = {
+    "last_check": 0,
+    "status": "idle",  # idle, checking, pulling, updated, error
+    "message": "Up to date",
+    "last_commit": ""
+}
 
 
 def get_all_files():
@@ -26,6 +37,45 @@ def get_all_files():
                 rel_path = os.path.relpath(full_path, SYLLABUS_DIR)
                 result.append({"label": rel_path, "path": full_path})
     return result
+
+
+def git_update_worker():
+    """Background thread to check and pull git updates."""
+    global git_status
+    while True:
+        try:
+            git_status["status"] = "checking"
+            git_status["last_check"] = time.time()
+            
+            # Fetch remote
+            subprocess.run(["git", "fetch"], check=True, capture_output=True)
+            
+            # Check if we are behind
+            local = subprocess.check_output(["git", "rev-parse", "@"], text=True).strip()
+            remote = subprocess.check_output(["git", "rev-parse", "@{u}"], text=True).strip()
+            base = subprocess.check_output(["git", "merge-base", "@", "@{u}"], text=True).strip()
+            
+            git_status["last_commit"] = local[:7]
+
+            if local == remote:
+                git_status["status"] = "idle"
+                git_status["message"] = f"Up to date ({git_status['last_commit']})"
+            elif local == base:
+                git_status["status"] = "pulling"
+                git_status["message"] = "Pulling updates..."
+                subprocess.run(["git", "pull"], check=True, capture_output=True)
+                git_status["status"] = "updated"
+                git_status["message"] = "Updated! Refreshing..."
+            else:
+                git_status["status"] = "idle"
+                git_status["message"] = "Diverged (manual intervention needed)"
+                
+        except Exception as e:
+            git_status["status"] = "error"
+            git_status["message"] = f"Git Error: {str(e)}"
+        
+        # Check every 600 seconds
+        time.sleep(600)
 
 
 HTML = r"""<!DOCTYPE html>
@@ -271,6 +321,9 @@ HTML = r"""<!DOCTYPE html>
   <div class="activity-item" data-section="algorithms" title="Algorithms">⚙️</div>
   <div class="activity-item" data-section="behavioral" title="Behavioral">💬</div>
   <div class="activity-item" data-section="ai_architecture" title="AI Architecture">🤖</div>
+  <div style="margin-top: auto; padding-bottom: 16px;">
+    <div id="git-status-dot" title="Git Status" style="width: 10px; height: 10px; border-radius: 50%; background: #238636; margin: 0 auto;"></div>
+  </div>
 </div>
 
 <nav id="sidebar">
@@ -287,6 +340,7 @@ HTML = r"""<!DOCTYPE html>
   <div id="topbar">
     <div id="sidebar-toggle" title="Toggle Sidebar">☰</div>
     <span id="topbar-title">Select a file to preview</span>
+    <span id="git-status-text" style="font-size: 11px; color: var(--muted); margin-right: 12px;">Git: idle</span>
     <span id="loading-badge">Loading…</span>
   </div>
   <div id="content-wrap">
@@ -441,6 +495,32 @@ document.getElementById('search').addEventListener('input', e => buildSidebar(e.
   updateActivityBar();
   buildSidebar();
 })();
+
+// Git Status Polling
+async function checkGitStatus() {
+  try {
+    const res = await fetch('/status');
+    const data = await res.json();
+    const dot = document.getElementById('git-status-dot');
+    const text = document.getElementById('git-status-text');
+    
+    text.textContent = `Git: ${data.message}`;
+    
+    if (data.status === 'idle') dot.style.background = '#238636';
+    else if (data.status === 'checking' || data.status === 'pulling') dot.style.background = '#d29922';
+    else if (data.status === 'updated') {
+        dot.style.background = '#58a6ff';
+        // Auto refresh sidebar if updated
+        const resFiles = await fetch('/files');
+        files = await resFiles.json();
+        buildSidebar();
+    } else if (data.status === 'error') dot.style.background = '#f85149';
+    
+  } catch (e) {}
+}
+setInterval(checkGitStatus, 15000); // Check every 15s
+checkGitStatus();
+
 </script>
 </body>
 </html>
@@ -464,6 +544,13 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/files":
             files = get_all_files()
             body = json.dumps(files).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+
+        elif path == "/status":
+            body = json.dumps(git_status).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
@@ -496,6 +583,10 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    # Start git update worker
+    t = threading.Thread(target=git_update_worker, daemon=True)
+    t.start()
+    
     server = HTTPServer(("0.0.0.0", PORT), Handler)
     print(f"✅ Markdown preview server running at http://localhost:{PORT}")
     print(f"   Serving files from: {SYLLABUS_DIR}")
