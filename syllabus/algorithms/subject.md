@@ -43,6 +43,7 @@
 |------|---------|
 | [sliding_window.md](03_sliding_window/sliding_window.md) | 滑動視窗基礎 |
 | [sliding_window_min_of_max.md](03_sliding_window/sliding_window_min_of_max.md) | 所有長度 k 子陣列最大值的最小值（單調隊列）✅ 新 |
+| [minimum_window_substring.md](03_sliding_window/minimum_window_substring.md) | Minimum Window Substring（滑動視窗找最短子字串）✅ 新 |
 
 ### 04 Stack & Queue
 | 檔案 | 題目摘要 |
