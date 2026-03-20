@@ -18,7 +18,7 @@ PORT = 20328
 
 # Global state for Git updates
 git_status = {
-    "last_check": 0,
+    "last_check": time.time(),
     "status": "idle",  # idle, checking, pulling, updated, error
     "message": "Up to date",
     "last_commit": ""
@@ -341,6 +341,7 @@ HTML = r"""<!DOCTYPE html>
     <div id="sidebar-toggle" title="Toggle Sidebar">☰</div>
     <span id="topbar-title">Select a file to preview</span>
     <span id="git-status-text" style="font-size: 11px; color: var(--muted); margin-right: 12px;">Git: idle</span>
+    <span id="last-update-text" style="font-size: 11px; color: var(--muted); margin-right: 12px;"></span>
     <span id="loading-badge">Loading…</span>
   </div>
   <div id="content-wrap">
@@ -416,6 +417,7 @@ function buildSidebar(filter = '') {
         
         const folderContent = document.createElement('div');
         folderContent.className = 'folder-content';
+        folderContent.style.display = 'block'; // Default to expanded
         
         folderHead.addEventListener('click', () => {
           const isCollapsed = folderContent.style.display === 'none';
@@ -459,6 +461,10 @@ document.querySelectorAll('.activity-item').forEach(el => {
   el.addEventListener('click', () => {
     currentSection = el.dataset.section;
     document.getElementById('search').value = '';
+    
+    // Auto-expand sidebar if it was collapsed
+    document.getElementById('sidebar').classList.remove('collapsed');
+    
     updateActivityBar();
     buildSidebar();
   });
@@ -505,6 +511,11 @@ async function checkGitStatus() {
     const text = document.getElementById('git-status-text');
     
     text.textContent = `Git: ${data.message}`;
+    if (data.last_check) {
+        const d = new Date(data.last_check * 1000);
+        const timeStr = d.toLocaleTimeString('zh-TW', { hour12: false });
+        document.getElementById('last-update-text').textContent = `Check: ${timeStr}`;
+    }
     
     if (data.status === 'idle') dot.style.background = '#238636';
     else if (data.status === 'checking' || data.status === 'pulling') dot.style.background = '#d29922';

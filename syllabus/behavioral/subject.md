@@ -25,14 +25,13 @@
 |---------|-------------|---------|
 | [story_ocr_opencv.md](sample/story_ocr_opencv.md) | BIOS 改版後，以 24hr PoC + 三方會議說服主管/ML/QA，誤判率降低 100 倍，每週節省 40 小時 | `T1` `T3` `T5` |
 | [story_flaky_tests.md](sample/story_flaky_tests.md) | Flaky Test 30%→5%：說服主管的 ROI Matrix + Registry Pattern 治理 + 1-on-1 收服反對者 | `T1` `T2` `T3` `T4` `T6` |
-| [story_bios_bug.md](sample/story_bios_bug.md) | BIOS 環境變數 Bug：召集三方會議，讓產線人員的真實數據打破資深同事的 Sunk Cost 僵局 | `T1` `T3` `T6` |
-| [story_bsp_flash.md](sample/story_bsp_flash.md) | BSP Flash 架構改革：PoC + 資安論據說服 PM 與產線，刷機工時降低 50% | `T1` `T3` `T5` |
 | [story_portal_migration.md](sample/story_portal_migration.md) | 帶領 30+ 人遷移至集中式 Go/Vue Portal，靠穩定性驅動自願採用，消滅 Configuration Drift | `T2` `T3` `T5` `T7` |
 | [story_ipc_cost_down.md](sample/story_ipc_cost_down.md) | IPC 規格降級失敗：沒能說服主管預留空間導致現場物理改裝，事後推動 cross-functional NPI 標準 | `T1` `T3` `T4` `T5` `T7` |
 | [story_bios_security_notification.md](sample/story_bios_security_notification.md) | 從一句話需求到梳理跨國API依賴，利用時程透明化說服PM等待6週ETA，實作半自動化寄信系統 | `T1` `T2` `T3` `T5` |
 | [story_test_library_mentorship.md](sample/story_test_library_mentorship.md) | 解決新人迷航痛點：主動將異質測試工具封裝成共用 Library 並建立 API 文件庫，加速 Onboarding | `T2` `T3` `T6` |
 | [story_raspberry_pi_rust_capture.md](sample/story_raspberry_pi_rust_capture.md) | 承接無人管的歷史爛攤子：用 Rust 底層直連 v4l2 重構樹莓派截圖架構，修復 90% 的 OCR Flaky Tests | `T2` `T4` `T6` |
 | [story_jetson_bsp_tradeoff.md](sample/story_jetson_bsp_tradeoff.md) | 克服過度工程的誘惑：在 Jetson BSP 編譯流程中放棄軟體解耦，改用實體機暴力綁定，換取未來的零維護成本 | `T4` `T5` `T7` |
+| [story_bsp_flash.md](sample/story_bsp_flash.md) | BSP Flash 架構改革：PoC + 資安論據說服 PM 與產線，刷機工時降低 50% | `T1` `T3` `T5` |
 
 
 ---
@@ -41,9 +40,9 @@
 
 | Type | 主力故事 | 備用故事 | 狀態 |
 |------|---------|---------|------|
-| **T1 衝突** | `story_ocr_opencv` | `story_bios_security_notification` / `story_flaky_tests` / `story_bios_bug` / `story_bsp_flash` | ✅ 充足 |
+| **T1 衝突** | `story_ocr_opencv` | `story_bios_security_notification` / `story_flaky_tests` / `story_bsp_flash` | ✅ 充足 |
 | **T2 模糊性** | `story_bios_security_notification` | `story_flaky_tests` (Layer B) / `story_portal_migration` | ✅ 充足 |
-| **T3 影響力(無權威)** | `story_ocr_opencv` | `story_bios_security_notification` / `story_flaky_tests` / `story_bios_bug` / `story_bsp_flash` / `story_portal_migration` | ✅ 充足 |
+| **T3 影響力(無權威)** | `story_ocr_opencv` | `story_bios_security_notification` / `story_flaky_tests` / `story_bsp_flash` / `story_portal_migration` | ✅ 充足 |
 | **T4 失敗反思(除錯)** | `story_ipc_cost_down` | `story_raspberry_pi_rust_capture` / `story_flaky_tests` / `story_jetson_bsp_tradeoff` | ✅ 充足 |
 | **T5 優先級(權衡)** | `story_ocr_opencv` | `story_bsp_flash` / `story_portal_migration` / `story_jetson_bsp_tradeoff` | ✅ 充足滿分 |
 | **T6 Googleyness** | `story_raspberry_pi_rust_capture` | `story_test_library_mentorship` / `story_flaky_tests` | ✅ 充足滿分 |

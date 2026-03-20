@@ -1,71 +1,113 @@
-# System Design Mock Interview Sample: Rate Limiter
+# System Design: Distributed Rate Limiter (架構設計：分散式限流器)
 
-**Target Level:** Google L4 / L5 (Senior Software Engineer)
-**Focus Area:** API Protection, Memory Compression, Redis, Concurrency Control (Race Conditions)
-
----
-
-## 1. Requirements Gathering & API Scope
-
-**Functional Requirements:**
-1. Limit API request counts for users / IP addresses (e.g., 100 requests per minute).
-2. Protect against both malicious DDoS bursts and internal accidental microservice retry-loops.
-3. Blocked requests must return HTTP 429 (Too Many Requests) immediately at the Gateway, preventing traffic from entering the downstream application tier.
-4. Provide a `Retry-After` header telling clients exactly when they are permitted to request again.
-
-**Non-Functional Requirements:**
-- **Extreme Low Latency (Critical L5 Requirement):** The Rate Limiter must respond in **1~5 milliseconds**. 
-  - *Pitfall:* Proposing 0.1s (100ms) is dangerously slow and will double the latency of the entire backend system. Rate limiters demand In-Memory datastores (like Redis).
+**Topic / 主題:** High-Throughput Traffic Shaping & Global Consistency / 高吞吐量流量治理與全域一致性
+**Target Level / 目標等級:** Google L4 / L5
+**Session Rating / 場次評分:** **Strong Hire**
+**Session Date / 面試日期:** 2026-03-13
 
 ---
 
-## 2. Algorithm Deep Dive: Counters vs. Buckets
+## 1. Requirements & Scale (需求與規模)
 
-### Approach A: Fixed Window Counter (Time Block)
-- **Concept:** Use a dictionary `IP -> count` set to flush every minute (e.g., 12:00 -> 12:01).
-- **The Burst Traffic Edge Case (致命漏洞):** If the limit is 100/min. A user can send 100 requests at 12:00:59, the counter resets at 12:01:00, and they send another 100 requests at 12:01:01. The server receives 200 requests within *two seconds*, completely bypassing the intention of the rate limit.
+### Functional Requirements (功能需求)
+**English:**
+- Support multi-dimensional limiting (UserID, IP, API Key).
+- Accurate enforcement for high-value APIs; optimized for low latency in others.
+- Fail-open/closed strategies per API metadata.
 
-### Approach B: Sliding Window Log
-- **Concept:** Store specific timestamps of every incoming request in an array. Remove timestamps older than 1 minute.
-- **The OOM Edge Case:** If a VIP is allowed 1,000,000 requests per minute, saving 1 million timestamps for a single IP consumes megabytes of memory. At scale with millions of IPs, this triggers rapid Out-Of-Memory (OOM) failures in Redis.
+**中文：**
+- 支援多維度限流（UserID, IP, API Key）。
+- 對高價值 API 進行精確限流；其餘 API 以低延遲優化為主。
+- 根據 API 元數據配置 Fail-open 或 Fail-closed 策略。
 
-### Approach C: Token Bucket (The L5 Standard)
-- **Concept:** A bucket holds a maximum number of tokens. Tokens are added to the bucket at a constant rate. Requests consume a token. If the bucket is empty, the request is dropped.
-- **The Math & Memory Optimization:** 
-  We **do not** need arrays of timestamps. In Redis, we only store:
-  1. `current_tokens` (Int)
-  2. `last_update_time` (Timestamp)
-  When a request arrives, we calculate: `new_tokens = (now - last_update_time) * refill_rate`. Add them to `current_tokens`, subtract 1, update the timestamp, and allow the request. 
-  - **Memory:** $O(1)$. Just two integer values per IP constraint.
+### Non-Functional Requirements (非功能需求)
+**English:**
+- **Scale:** 10M DAU, 1M RPS peak.
+- **Latency:** Sub-millisecond response time via SDK-side leasing.
+- **Availability:** 99.99% for the limiter service.
+- **Consistency:** Eventual consistency for global aggregation; Strong consistency for "Strict Mode".
 
----
-
-## 3. Distributed Architecture & Race Conditions
-
-**The Scenario:** 50 API Gateways fronting the traffic. A user sends two requests simultaneously to Gateway A and Gateway B within 1 millisecond.
-**The Race Condition:** Both check Redis, see 1 token left, both subtract 1, and both allow the traffic. 1 token let 2 requests pass.
-
-### Solution 1: Distributed Locks (Anti-Pattern)
-- **Idea:** Gateway A grabs a Redis `SETNX` lock, calculates, and releases.
-- **Why it Fails an L5 Interview:** Network I/O ping-pong + lock contention. Locking increases latency from 2ms to 50ms+. Throttled queues will build up, crashing the API Gateway under burst loads.
-
-### Solution 2: Redis Lua Scripting (The Perfect L5 Answer)
-- **Idea:** Redis relies on a **Single-Threaded** event loop.
-- **Execution:** We write the mathematical logic (checking last time, refilling tokens, taking a token) into a tiny `.lua` script. The API Gateway sends this script + the IP to Redis. Redis executes the script *atomically*.
-- **Result:** No Race Conditions. Zero lock contention across network nodes. Lightning-fast execution strictly within RAM.
+**中文：**
+- **規模：** 1,000 萬日活躍用戶，峰值 100 萬 RPS。
+- **延遲：** 透過 SDK 端租約機制達到亞毫秒級響應。
+- **可用性：** 限流服務需達 99.99% 可用性。
+- **一致性：** 全域彙總採最終一致性；「嚴格模式」採強一致性。
 
 ---
 
-## 📝 Formal Evaluation Rubric (Strict Grading Sample)
+## 2. Capacity Estimation (容量估算)
 
-*   **Module Completed:** System Design - Rate Limiter (Token Bucket & Concurrency)
-*   **Target Level:** L4/L5
-*   **Overall Rating:** **Lean Hire (LH)**
+| Metric (指標) | Value (數值) | Calculation (計算) |
+|---|---|---|
+| **Peak Throughput** | 1,000,000 RPS | Distributed across 10-15 Redis shards per region. |
+| **Memory usage** | ~2 GB | 10M users * 64 bytes/entry (Sliding window metadata). |
+| **Bandwidth** | 100 MB/s | 1M RPS * 100 bytes (gRPC overhead). |
 
-### 🤔 Cons / Critical Gaps (Gap to L5 Strict Standards):
-1.  **Latency Awareness:** Initially proposed 100ms latency. At Google or Amazon scale, passing every API call through a 100ms tax is an architectural failure. Needs to demonstrate immediate awareness of microsecond/single-digit millisecond budgets for edge-tier security layers.
-2.  **Concurrency Blindspot:** Failed to proactively recognize Race Conditions in a multi-gateway scenario. When asked, proposed "locks" without recognizing the catastrophic latency implications of Distributed Locks on an edge Gateway. At the L5 level, proposing Lua Scripts or Redis Atomic pipelines unprompted is heavily expected.
+---
 
-### 💡 Actionable Corrections:
-- Do not jump to Distributed Locks to solve concurrency gracefully in latency-critical paths. Study **Redis Single-Threaded properties** and **Atomic Lua Scripts**.
-- Study memory footprints. Understand why an array of elements (Sliding Window Log) limits scalability more than mathematically derivable models (Token Bucket / Leaky Bucket).
+## 3. High-Level Architecture (高階架構圖)
+
+### ASCII Architecture Diagram
+
+```text
+[ Global Admin/Config ] -> [ Global Aggregator (GA) ]
+                                | (Async Sync)
+                                v
++------------------+    +-------------------+
+|    NA Region     |    |    APAC Region    |  (Regional Autonomy)
+| [Redis Cluster]  |    |  [Redis Cluster]  |
++------------------+    +-------------------+
+        ^                        ^
+        |                        |
+  [ gRPC Service ] <------- [ gRPC Service ]
+        ^                        ^
+        | (Quota Lease)          |
+  [ SDK @ Client Service ] <-----+
+```
+
+**English:**
+- **SDK:** Implements Quota Leasing and Jittered Early Renewal to reduce backend RPS.
+- **Regional Service:** Handles local enforcement using Redis Shards.
+- **Global Aggregator:** Periodically (1-5s) rebalances quotas across regions based on consumption.
+
+**中文：**
+- **SDK：** 實作配額租借 (Quota Leasing) 與抖動式主動更新，以降低後端負荷。
+- **區域服務：** 使用 Redis 分片進行在地化限流判定。
+- **全域彙總器 (GA)：** 每 1-5 秒根據各區消耗量動態重新分配配額。
+
+---
+
+## 4. Deep Dive: L5 Scale Challenges (L5 進階剖析)
+
+### Hot Partition Mitigation (熱區問題)
+**English:** 
+Use **L1 SDK Aggregation** (Batching requests locally for 10ms) and **Virtual Shards** (Splitting a single hot key into $N$ sub-keys) to distribute load across Redis nodes.
+**中文：**
+使用 **L1 SDK 本地聚合**（在本地緩存 10ms 後批次發送）與 **虛擬分片**（將單一熱門 Key 拆分為 $N$ 個子 Key）來分散 Redis 節點的壓力和熱點。
+
+### Strict Consistency for High-Value APIs (嚴格一致性模式)
+**English:** 
+Bypass SDK caching, force synchronous gRPC calls, and use Redis Lua scripts for atomic CAS (Check-and-Set) or Spanner for extreme reliability. Adopt Fail-closed strategy.
+**中文：**
+繞過 SDK 分級快取，強制執行同步 gRPC 呼叫，並使用 Redis Lua 腳本進行原子測試並設定 (CAS)，或使用 Spanner 確保極高可靠性。採用 Fail-closed 策略。
+
+---
+
+## 5. Technical Term Dictionary (技術名詞字典)
+
+| Term (術語) | English Definition | 中文解釋 |
+|---|---|---|
+| **Quota Leasing** | SDK pulls a batch of tokens for locally autonomous check | 配額租約 / 租借機制 |
+| **Thundering Herd** | Many clients renewing leases simultaneously causing backend spikes | 驚群效應 |
+| **Fail-open** | Passing requests if the limiter service fails | 故障開放 (放行模式) |
+| **Virtual Shard** | Splitting a hot data partition into logical sub-units | 虛擬分片 |
+| **Jitter** | Adding randomness to time-based tasks to avoid sync spikes | 隨機抖動 |
+
+---
+
+## 6. Evaluations & Actionable Corrections (評估與改進)
+
+1. **Overall Rating:** **Strong Hire**
+2. **Critical Gaps:** 
+   - **English:** When discussing Redis, ensure you mention that while Redis is single-threaded for commands, sharding is mandatory for 1M RPS horizontally.
+   - **中文：** 討論 Redis 時，須強調雖然單一 Redis 指令是單執行緒，但面對 100 萬 RPS 時，水平擴展的分片架構 (Sharding) 是強制性的。
