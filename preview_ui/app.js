@@ -15,7 +15,8 @@ const categoryIcons = {
   golang: '🐹',
   python: '🐍',
   networking: '🌐',
-  system: '⚙️'
+  system: '⚙️',
+  tech_core: '💎'
 };
 
 function saveMastery() {
@@ -30,6 +31,7 @@ const sectionTitles = {
   system_design: 'System Design',
   behavioral: 'Behavioral',
   ai_architecture: 'AI Architecture',
+  tech_core: 'Technical Core',
   questions: 'Question Vault',
   roadmaps: 'Target Prep'
 };
@@ -185,6 +187,13 @@ async function loadFile(path, label, item) {
     const text = await res.text();
     document.getElementById('content').innerHTML = marked.parse(text);
     document.getElementById('content-wrap').scrollTop = 0;
+
+    // Trigger Mermaid rendering
+    if (window.mermaid) {
+      mermaid.run({
+        nodes: document.querySelectorAll('.mermaid')
+      });
+    }
     
     // Update Mastery Toggle
     const toggle = document.getElementById('mastered-toggle');
@@ -216,6 +225,25 @@ marked.use(markedKatex({
   throwOnError: false,
   displayMode: false
 }));
+
+// Mermaid Configuration
+if (window.mermaid) {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark'
+  });
+}
+
+// Custom Marked Renderer for Mermaid
+const renderer = new marked.Renderer();
+const originalCodeRenderer = renderer.code.bind(renderer);
+renderer.code = function(token) {
+  if (token.lang === 'mermaid') {
+    return `<div class="mermaid">${token.text}</div>`;
+  }
+  return originalCodeRenderer(token);
+};
+marked.setOptions({ renderer });
 
 // Hide Mastered Toggle Logic
 const hideMasteredBtn = document.getElementById('hide-mastered-btn');
