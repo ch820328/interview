@@ -13,6 +13,8 @@
 | [redis_technical_deep_dive.md](redis_technical_deep_dive.md) | Redis 專家大師課：從底層數據結構到高可用叢集架構全方位解析 | `Redis` `Cache` `High-Availability` `LUA` |
 | [nvssvt_masterclass.md](nvssvt_masterclass.md) | NVIDIA 系統軟體驗證工具包 (NVSSVT)：Grace Hopper 與 MGX 平台驗證大師課 | `NVIDIA` `MGX` `Grace-Hopper` `Validation` |
 | [lww_vs_crdt.md](lww_vs_crdt.md) | 衝突解決深度比較：LWW (Last Write Wins) vs. CRDTs 理論與實踐 | `Distributed-Systems` `Consistency` `Sync` |
+| [telemetry_and_measurement_agent.md](telemetry_and_measurement_agent.md) | 高精度數據採集層：結合 Hardware Counters, eBPF 與 TPU 遙測技術 | `Observability` `eBPF` `Performance` `TPU` |
+| [golang_masterclass.md](golang_masterclass.md) | Go 語言實戰教材：從語法核心到大規模並發工程架構應用 | `Golang` `Concurrency` `Backend` `Gin` |
 
 ---
 
